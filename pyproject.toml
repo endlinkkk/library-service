@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "library"
+version = "0.1.0"
+description = ""
+authors = ["Sergey <one6sergey@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.6"
+ruff = "^0.8.2"
+punq = "^0.7.0"
+sqlalchemy = "^2.0.36"
+pydantic-settings = "^2.6.1"
+uvicorn = "^0.32.1"
+aiosqlite = "^0.20.0"
+greenlet = "^3.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
