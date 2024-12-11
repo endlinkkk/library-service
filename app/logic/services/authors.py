@@ -19,9 +19,9 @@ from typing import AsyncGenerator
 
 @dataclass
 class BaseAuthorService(ABC):
-    # @abstractmethod
-    # async def get_author_list(self, filters: AuthorFilters, pagination: PaginationIn) -> Iterable[AuthorEntity]:
-    #     ...
+    @abstractmethod
+    async def get_author_list(self, pagination: PaginationIn) -> Iterable[AuthorEntity]:
+        ...
 
     @abstractmethod
     async def create_author(self, author: AuthorEntity) -> AuthorEntity: ...
@@ -63,3 +63,10 @@ class AuthorService(BaseAuthorService):
             await session.commit()
 
         return saved_author
+    
+
+    async def get_author_list(self, pagination: PaginationIn) -> Iterable[AuthorEntity]:
+        async with self.get_session() as session:
+            author_repository = SQLAlchemyAuthorRepository(session=session)
+            authors = await author_repository.get(limit=pagination.limit, offset=pagination.offset)
+        return authors

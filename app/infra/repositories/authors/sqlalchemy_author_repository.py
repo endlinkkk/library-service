@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.future import select
 
 from domain.entities.library import Author as AuthorEntity
 from infra.database.models import AuthorModel
@@ -36,17 +37,22 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
     #         )
     #     return None
 
-    # def get_all(self) -> List[AuthorEntity]:
-    #     author_models = self.session.query(AuthorModel).all()
-    #     return [
-    #         Author(
-    #             id=author_model.id,
-    #             name=author_model.name,
-    #             surname=author_model.surname,
-    #             date_of_birth=author_model.date_of_birth
-    #         )
-    #         for author_model in author_models
-    #     ]
+    async def get(self, limit: int = 20, offset: int = 0) -> list[AuthorEntity]:
+        result = await self.session.execute(
+            select(AuthorModel).offset(offset).limit(limit)
+        )
+        author_models = result.scalars().all()
+        return [
+            AuthorEntity(
+                id=author_model.id,
+                name=author_model.name,
+                surname=author_model.surname,
+                date_of_birth=author_model.date_of_birth,
+                created_at=author_model.created_at,
+                updated_at=author_model.updated_at,
+            )
+            for author_model in author_models
+        ]
 
     # def update(self, author: AuthorEntity) -> AuthorEntity:
     #     author_model = self.session.query(AuthorModel).filter_by(id=author.id).first()
