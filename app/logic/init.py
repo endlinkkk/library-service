@@ -20,25 +20,17 @@ def init_container() -> Container:
 
 def _init_container() -> Container:
     container = Container()
-    # container.register(Settings, instance=Settings(), scope=Scope.singleton)
-    # settings: Settings = container.resolve(Settings)
+    container.register(Settings, instance=Settings(), scope=Scope.singleton)
+    settings: Settings = container.resolve(Settings)
 
     # Настройка базы данных
-    DATABASE_URL = "sqlite+aiosqlite:///database.db"
-    database_manager = DatabaseManager(DATABASE_URL)
+    # DATABASE_URL = "sqlite+aiosqlite:///database.db"
+    # DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    database_manager = DatabaseManager(settings.db_url)
     container.register(
         DatabaseManager, instance=database_manager, scope=Scope.singleton
     )
-    # engine = create_async_engine(DATABASE_URL, echo=True)
-    # SessionLocal = sessionmaker(
-    #     bind=engine,
-    #     class_=AsyncSession,
-    #     expire_on_commit=False
-    # )
 
-    # async def init_models():
-    #     async with engine.begin() as conn:
-    #         await conn.run_sync(Base.metadata.create_all)
 
     # initial services
     def init_author_service() -> AuthorService:
