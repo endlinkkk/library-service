@@ -9,14 +9,13 @@ from dataclasses import dataclass
 
 @dataclass
 class SQLAlchemyAuthorRepository(BaseAuthorRepository):
-    session: Session
 
-    async def add(self, author: AuthorEntity) -> AuthorEntity:
+    async def add(self, author: AuthorEntity, session: Session) -> AuthorEntity:
         author_model = AuthorModel(
             name=author.name, surname=author.surname, date_of_birth=author.date_of_birth
         )
-        self.session.add(author_model)
-        await self.session.flush()  # Flush to get the ID
+        session.add(author_model)
+        await session.flush()
         return AuthorEntity(
             id=author_model.id,
             name=author_model.name,
@@ -26,19 +25,23 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
             updated_at=author_model.updated_at,
         )
 
-    # def get_by_id(self, author_id: int) -> Optional[AuthorEntity]:
-    #     author_model = self.session.query(AuthorModel).filter_by(id=author_id).first()
-    #     if author_model:
-    #         return AuthorEntity(
-    #             id=author_model.id,
-    #             name=author_model.name,
-    #             surname=author_model.surname,
-    #             date_of_birth=author_model.date_of_birth
-    #         )
-    #     return None
+    async def get_by_id(self, author_id: int, session: Session) -> AuthorEntity | None:
+        result = await session.execute(
+            select(AuthorModel).where(AuthorModel.id == author_id)
+        )
+        author_model = result.scalars().one_or_none()
+        if author_model:
+            return AuthorEntity(
+                id=author_model.id,
+                name=author_model.name,
+                surname=author_model.surname,
+                date_of_birth=author_model.date_of_birth,
+                created_at=author_model.created_at,
+                updated_at=author_model.updated_at,
+            )
 
-    async def get(self, limit: int = 20, offset: int = 0) -> list[AuthorEntity]:
-        result = await self.session.execute(
+    async def get_all(self, session: Session, limit: int = 20, offset: int = 0) -> list[AuthorEntity]:
+        result = await session.execute(
             select(AuthorModel).offset(offset).limit(limit)
         )
         author_models = result.scalars().all()
@@ -54,23 +57,37 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
             for author_model in author_models
         ]
 
-    # def update(self, author: AuthorEntity) -> AuthorEntity:
-    #     author_model = self.session.query(AuthorModel).filter_by(id=author.id).first()
-    #     if author_model:
-    #         author_model.name = author.name
-    #         author_model.surname = author.surname
-    #         author_model.date_of_birth = author.date_of_birth
-    #         self.session.flush()
-    #         return Author(
-    #             id=author_model.id,
-    #             name=author_model.name,
-    #             surname=author_model.surname,
-    #             date_of_birth=author_model.date_of_birth
-    #         )
-    #     return None
+    async def update(self, session: Session, author_id: int, author: AuthorEntity) -> AuthorEntity | None:
+        result = await session.execute(
+            select(AuthorModel).where(AuthorModel.id == author_id)
+        )
+        author_model = result.scalars().one_or_none()
 
-    # def delete(self, author_id: int) -> None:
-    #     author_model = self.session.query(AuthorModel).filter_by(id=author_id).first()
-    #     if author_model:
-    #         self.session.delete(author_model)
-    #         self.session.flush()
+        if author_model:
+            author_model.name = author.name
+            author_model.surname = author.surname
+            author_model.date_of_birth = author.date_of_birth
+            session.flush()
+            return AuthorEntity(
+                id=author_model.id,
+                name=author_model.name,
+                surname=author_model.surname,
+                date_of_birth=author_model.date_of_birth,
+                created_at=author_model.created_at,
+                updated_at=author_model.updated_at,
+            )
+        return None
+    
+
+    async def delete(self, session: Session, author_id: int) -> bool:
+        result = await session.execute(
+            select(AuthorModel).where(AuthorModel.id == author_id)
+        )
+        author_model = result.scalars().one_or_none()
+        if author_model:
+            await session.delete(author_model)
+            await session.flush()
+            return True
+        return False
+
+

@@ -4,18 +4,19 @@ from logic.exceptions.base import LogicException
 
 
 @dataclass(eq=False)
-class AuthorNameTooLongException(LogicException):
-    name: str
+class BookTitleTooLongException(LogicException):
+    title: str
 
     @property
     def message(self):
-        return f"Author's name is too long: {self.name}"
+        return f"Books's title is too long: {self.title}"
+    
 
 
 
 @dataclass(eq=False)
-class AuthorNotFoundException(LogicException):
+class BookNotFoundException(LogicException):
 
     @property
     def message(self):
-        return "Author not found"
+        return "Book not found"

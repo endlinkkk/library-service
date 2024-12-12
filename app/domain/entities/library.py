@@ -5,6 +5,7 @@ from datetime import date, datetime
 @dataclass(eq=False)
 class Book:
     title: str
+    description: str
     author_id: int
     available_copies: int
     id: int | None = field(default=None, kw_only=True)

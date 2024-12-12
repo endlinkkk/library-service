@@ -1,0 +1,132 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Iterable
+from contextlib import asynccontextmanager
+
+from application.api.filters import PaginationIn
+from domain.entities.library import Book as BookEntity
+
+from infra.repositories.authors.base import BaseAuthorRepository
+from infra.repositories.authors.sqlalchemy_author_repository import (
+    SQLAlchemyAuthorRepository,
+)
+from infra.repositories.books.base import BaseBookRepository
+from logic.exceptions.authors import AuthorNameTooLongException, AuthorNotFoundException
+
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import AsyncGenerator
+
+from logic.exceptions.base import LogicException
+from logic.exceptions.books import BookNotFoundException, BookTitleTooLongException
+
+
+@dataclass
+class BaseBookService(ABC):
+
+    @abstractmethod
+    async def create_book(self, book: BookEntity) -> BookEntity: ...
+
+    @abstractmethod
+    async def get_book_list(self, pagination: PaginationIn) -> Iterable[BookEntity]: ...
+
+    @abstractmethod
+    async def get_book(self, book_id: int) -> BookEntity: ...
+
+
+    @abstractmethod
+    async def update_book(self, book_id: int, book: BookEntity) -> BookEntity: ...
+
+
+    @abstractmethod
+    async def delete_book(self, book_id: int): ...
+
+
+
+@dataclass
+class BaseBookValidatorService(ABC):
+    @abstractmethod
+    def validate(
+        self,
+        book: BookEntity,
+    ): ...
+
+
+@dataclass
+class BookTitleValidatorService(BaseBookValidatorService):
+    def validate(self, book: BookEntity):
+        if len(book.title) > 255:
+            raise BookTitleTooLongException(title=book.title)
+        
+
+@dataclass
+class ComposedBookValidatorService:
+    validators: list[BaseBookValidatorService]
+
+    def validate(
+            self,
+            book: BookEntity
+    ):
+        for validator in self.validators:
+            validator.validate(book=book)
+
+
+@dataclass
+class BookService(BaseBookService):
+    session_factory: sessionmaker
+    book_repository: BaseBookRepository
+
+
+    @asynccontextmanager
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
+        try:
+            session: AsyncSession = self.session_factory()
+            yield session
+
+        finally:
+            await session.close()
+
+    async def create_book(self, book: BookEntity) -> BookEntity:
+        async with self.get_session() as session:
+            saved_book = await self.book_repository.add(book=book, session=session)
+            await session.commit()
+
+        return saved_book
+    
+
+    async def get_book_list(self, pagination: PaginationIn) -> Iterable[BookEntity]:
+        async with self.get_session() as session:
+            authors = await self.book_repository.get_all(session=session, limit=pagination.limit, offset=pagination.offset)
+        return authors
+    
+    async def get_book(self, book_id: int) -> BookEntity | None:
+        async with self.get_session() as session:
+            book = await self.book_repository.get_by_id(book_id=book_id, session=session)
+
+        if book is None:
+            raise BookNotFoundException()
+        
+        
+        return book
+
+
+    async def update_book(self, book_id: int, book: BookEntity) -> BookEntity:
+        async with self.get_session() as session:
+            book = await self.book_repository.update(book_id=book_id, session=session, book=book)
+
+            await session.commit()
+        
+        if book is None:
+            raise BookNotFoundException()
+        
+        return book
+    
+
+    async def delete_book(self, book_id: int):
+        async with self.get_session() as session:
+            deleted = await self.book_repository.delete(book_id=book_id, session=session)
+            await session.commit()
+        
+        if not deleted:
+            raise BookNotFoundException()
+    

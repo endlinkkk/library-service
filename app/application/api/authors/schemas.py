@@ -5,7 +5,7 @@ from datetime import datetime
 from domain.entities.library import Author as AuthorEntity
 
 
-class CreateAuthorSchema(BaseModel):
+class InAuthorSchema(BaseModel):
     name: str
     surname: str
     date_of_birth: date
@@ -16,7 +16,7 @@ class CreateAuthorSchema(BaseModel):
         )
 
 
-class AuthorSchema(BaseModel):
+class OutAuthorSchema(BaseModel):
     id: int
     name: str
     surname: str
@@ -25,8 +25,8 @@ class AuthorSchema(BaseModel):
     updated_at: datetime
 
     @staticmethod
-    def from_entity(entity: AuthorEntity) -> "AuthorSchema":
-        return AuthorSchema(
+    def from_entity(entity: AuthorEntity) -> "OutAuthorSchema":
+        return OutAuthorSchema(
             id=entity.id,
             name=entity.name,
             surname=entity.surname,
@@ -36,4 +36,4 @@ class AuthorSchema(BaseModel):
         )
 
 
-AuthorListSchema = list[AuthorSchema]
+AuthorListSchema = list[OutAuthorSchema]

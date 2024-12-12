@@ -7,20 +7,20 @@ from domain.entities.library import Author
 @dataclass
 class BaseAuthorRepository(ABC):
     @abstractmethod
-    def add(self, author: Author) -> Author: ...
+    async def add(self, author: Author) -> Author: ...
 
-    # @abstractmethod
-    # def get_by_id(self, author_id: int) -> Author | None:
-    #     ...
+    @abstractmethod
+    async def get_by_id(self, author_id: int) -> Author | None:
+        ...
 
-    # @abstractmethod
-    # def get_all(self) -> list[Author]:
-    #     ...
+    @abstractmethod
+    async def get_all(self, limit: int, offset: int) -> list[Author]:
+        ...
 
-    # @abstractmethod
-    # def update(self, author: Author) -> Author:
-    #     ...
+    @abstractmethod
+    async def update(self, author: Author) -> Author:
+        ...
 
-    # @abstractmethod
-    # def delete(self, author_id: int) -> None:
-    #     ...
+    @abstractmethod
+    async def delete(self, author_id: int) -> bool:
+        ...

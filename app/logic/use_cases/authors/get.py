@@ -16,3 +16,14 @@ class GetAuthorsUseCase(BaseUseCase):
         authors = await self.author_service.get_author_list(pagination=pagination)
 
         return authors
+    
+
+@dataclass
+class GetAuthorUseCase(BaseUseCase):
+    author_service: BaseAuthorService
+
+    async def execute(self, author_id: int) -> Author:
+
+        author = await self.author_service.get_author(author_id=author_id)
+
+        return author

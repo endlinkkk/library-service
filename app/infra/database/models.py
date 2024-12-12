@@ -21,7 +21,7 @@ class AuthorModel(Base):
     )
 
     books: Mapped[list["BookModel"]] = relationship(
-        "BookModel", back_populates="author"
+        "BookModel", back_populates="author", cascade="all, delete-orphan"
     )
 
 
