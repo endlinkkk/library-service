@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 @dataclass
 class SQLAlchemyAuthorRepository(BaseAuthorRepository):
-
     async def add(self, author: AuthorEntity, session: Session) -> AuthorEntity:
         author_model = AuthorModel(
             name=author.name, surname=author.surname, date_of_birth=author.date_of_birth
@@ -40,10 +39,10 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
                 updated_at=author_model.updated_at,
             )
 
-    async def get_all(self, session: Session, limit: int = 20, offset: int = 0) -> list[AuthorEntity]:
-        result = await session.execute(
-            select(AuthorModel).offset(offset).limit(limit)
-        )
+    async def get_all(
+        self, session: Session, limit: int = 20, offset: int = 0
+    ) -> list[AuthorEntity]:
+        result = await session.execute(select(AuthorModel).offset(offset).limit(limit))
         author_models = result.scalars().all()
         return [
             AuthorEntity(
@@ -57,7 +56,9 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
             for author_model in author_models
         ]
 
-    async def update(self, session: Session, author_id: int, author: AuthorEntity) -> AuthorEntity | None:
+    async def update(
+        self, session: Session, author_id: int, author: AuthorEntity
+    ) -> AuthorEntity | None:
         result = await session.execute(
             select(AuthorModel).where(AuthorModel.id == author_id)
         )
@@ -77,7 +78,6 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
                 updated_at=author_model.updated_at,
             )
         return None
-    
 
     async def delete(self, session: Session, author_id: int) -> bool:
         result = await session.execute(
@@ -89,5 +89,3 @@ class SQLAlchemyAuthorRepository(BaseAuthorRepository):
             await session.flush()
             return True
         return False
-
-

@@ -12,13 +12,12 @@ from infra.repositories.books.base import BaseBookRepository
 
 @dataclass
 class SQLAlchemyBookRepository(BaseBookRepository):
-
     async def add(self, book: BookEntity, session: Session) -> BookEntity:
         book_model = BookModel(
             title=book.title,
             description=book.description,
             author_id=book.author_id,
-            available_copies=book.available_copies
+            available_copies=book.available_copies,
         )
         session.add(book_model)
         await session.flush()
@@ -33,9 +32,7 @@ class SQLAlchemyBookRepository(BaseBookRepository):
         )
 
     async def get_by_id(self, book_id: int, session: Session) -> BookEntity | None:
-        result = await session.execute(
-            select(BookModel).where(BookModel.id == book_id)
-        )
+        result = await session.execute(select(BookModel).where(BookModel.id == book_id))
         book_model = result.scalars().one_or_none()
         if book_model:
             return BookEntity(
@@ -48,10 +45,10 @@ class SQLAlchemyBookRepository(BaseBookRepository):
                 updated_at=book_model.updated_at,
             )
 
-    async def get_all(self, session: Session, limit: int = 20, offset: int = 0) -> list[BookEntity]:
-        result = await session.execute(
-            select(BookModel).offset(offset).limit(limit)
-        )
+    async def get_all(
+        self, session: Session, limit: int = 20, offset: int = 0
+    ) -> list[BookEntity]:
+        result = await session.execute(select(BookModel).offset(offset).limit(limit))
         book_models = result.scalars().all()
         return [
             BookEntity(
@@ -66,11 +63,10 @@ class SQLAlchemyBookRepository(BaseBookRepository):
             for book_model in book_models
         ]
 
-
-    async def update(self, session: Session, book_id: int, book: BookEntity) -> BookEntity | None:
-        result = await session.execute(
-            select(BookModel).where(BookModel.id == book_id)
-        )
+    async def update(
+        self, session: Session, book_id: int, book: BookEntity
+    ) -> BookEntity | None:
+        result = await session.execute(select(BookModel).where(BookModel.id == book_id))
         book_model = result.scalars().one_or_none()
 
         if book_model:
@@ -89,12 +85,9 @@ class SQLAlchemyBookRepository(BaseBookRepository):
                 updated_at=book_model.updated_at,
             )
         return None
-    
 
     async def delete(self, session: Session, book_id: int) -> bool:
-        result = await session.execute(
-            select(BookModel).where(BookModel.id == book_id)
-        )
+        result = await session.execute(select(BookModel).where(BookModel.id == book_id))
         book_model = result.scalars().one_or_none()
         if book_model:
             await session.delete(book_model)
@@ -102,3 +95,11 @@ class SQLAlchemyBookRepository(BaseBookRepository):
             return True
         return False
 
+    async def reduce_by_one(self, session: Session, book_id: int) -> bool:
+        result = await session.execute(select(BookModel).where(BookModel.id == book_id))
+        book_model: BookModel = result.scalars().one_or_none()
+        if book_model and book_model.available_copies >= 1:
+            book_model.available_copies -= 1
+            await session.flush()
+            return True
+        return False

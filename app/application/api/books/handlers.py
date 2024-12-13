@@ -42,12 +42,11 @@ async def create_book_handler(
         book = await use_case.execute(book=schema.to_entity())
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutBookSchema.from_entity(book))
-
 
 
 @router.get(
@@ -56,37 +55,37 @@ async def create_book_handler(
     status_code=status.HTTP_200_OK,
     description="Get books",
     responses={
-        status.HTTP_200_OK: {"model": ApiResponse[ListPaginatedResponse[OutBookSchema]]},
+        status.HTTP_200_OK: {
+            "model": ApiResponse[ListPaginatedResponse[OutBookSchema]]
+        },
         status.HTTP_400_BAD_REQUEST: {"model": ErrorSchema},
     },
 )
 async def get_books_handler(
-    pagination_in: PaginationIn = Depends(), container: Container = Depends(init_container)
+    pagination_in: PaginationIn = Depends(),
+    container: Container = Depends(init_container),
 ) -> ApiResponse[ListPaginatedResponse[OutBookSchema]]:
     """Get books list"""
     use_case: GetBooksUseCase = container.resolve(GetBooksUseCase)
 
     try:
-        book_list = await use_case.execute(
-            pagination=pagination_in
-        )
+        book_list = await use_case.execute(pagination=pagination_in)
         items = [OutBookSchema.from_entity(obj) for obj in book_list]
         pagination_out = PaginationOut(
-        offset=pagination_in.offset,
-        limit=pagination_in.limit,
-        total=len(items),
-    )
+            offset=pagination_in.offset,
+            limit=pagination_in.limit,
+            total=len(items),
+        )
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(
         data=ListPaginatedResponse(items=items, pagination=pagination_out)
     )
-
 
 
 @router.get(
@@ -106,19 +105,15 @@ async def get_book_detail_handler(
     use_case: GetBookUseCase = container.resolve(GetBookUseCase)
 
     try:
-        book = await use_case.execute(
-            book_id=book_id
-        )
-        
+        book = await use_case.execute(book_id=book_id)
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutBookSchema.from_entity(book))
-
 
 
 @router.put(
@@ -138,19 +133,15 @@ async def update_book_handler(
     use_case: UpdateBookUseCase = container.resolve(UpdateBookUseCase)
 
     try:
-        book = await use_case.execute(
-            book_id=book_id, book=schema.to_entity()
-        )
-        
+        book = await use_case.execute(book_id=book_id, book=schema.to_entity())
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutBookSchema.from_entity(book))
-
 
 
 @router.delete(
@@ -168,14 +159,12 @@ async def delete_book_handler(
     use_case: DeleteBookUseCase = container.resolve(DeleteBookUseCase)
 
     try:
-        await use_case.execute(
-            book_id=book_id
-        )
+        await use_case.execute(book_id=book_id)
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return status.HTTP_204_NO_CONTENT

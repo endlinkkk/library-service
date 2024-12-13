@@ -27,8 +27,8 @@ class Author:
 @dataclass(eq=False)
 class Borrow:
     book_id: int
-    borrower_name: str
-    borrow_date: datetime
+    reader_name: str
+    borrow_date: datetime = field(default_factory=datetime.now, kw_only=True)
     return_date: datetime | None = None
     id: int | None = field(default=None, kw_only=True)
     created_at: datetime = field(default_factory=datetime.now, kw_only=True)

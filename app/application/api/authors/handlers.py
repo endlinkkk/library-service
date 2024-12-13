@@ -41,9 +41,9 @@ async def create_author_handler(
         author = await use_case.execute(author=schema.to_entity())
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutAuthorSchema.from_entity(author))
 
@@ -54,32 +54,33 @@ async def create_author_handler(
     status_code=status.HTTP_200_OK,
     description="Get authors",
     responses={
-        status.HTTP_200_OK: {"model": ApiResponse[ListPaginatedResponse[OutAuthorSchema]]},
+        status.HTTP_200_OK: {
+            "model": ApiResponse[ListPaginatedResponse[OutAuthorSchema]]
+        },
         status.HTTP_400_BAD_REQUEST: {"model": ErrorSchema},
     },
 )
 async def get_authors_handler(
-    pagination_in: PaginationIn = Depends(), container: Container = Depends(init_container)
+    pagination_in: PaginationIn = Depends(),
+    container: Container = Depends(init_container),
 ) -> ApiResponse[ListPaginatedResponse[OutAuthorSchema]]:
     """Get authors list"""
     use_case: GetAuthorsUseCase = container.resolve(GetAuthorsUseCase)
 
     try:
-        author_list = await use_case.execute(
-            pagination=pagination_in
-        )
+        author_list = await use_case.execute(pagination=pagination_in)
         items = [OutAuthorSchema.from_entity(obj) for obj in author_list]
         pagination_out = PaginationOut(
-        offset=pagination_in.offset,
-        limit=pagination_in.limit,
-        total=len(items),
-    )
+            offset=pagination_in.offset,
+            limit=pagination_in.limit,
+            total=len(items),
+        )
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(
         data=ListPaginatedResponse(items=items, pagination=pagination_out)
@@ -103,19 +104,15 @@ async def get_author_detail_handler(
     use_case: GetAuthorUseCase = container.resolve(GetAuthorUseCase)
 
     try:
-        author = await use_case.execute(
-            author_id=author_id
-        )
-        
+        author = await use_case.execute(author_id=author_id)
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutAuthorSchema.from_entity(author))
-
 
 
 @router.put(
@@ -129,25 +126,23 @@ async def get_author_detail_handler(
     },
 )
 async def update_author_handler(
-    schema: InAuthorSchema, author_id: int, container: Container = Depends(init_container)
+    schema: InAuthorSchema,
+    author_id: int,
+    container: Container = Depends(init_container),
 ) -> ApiResponse[OutAuthorSchema]:
     """Update book"""
     use_case: UpdateAuthorUseCase = container.resolve(UpdateAuthorUseCase)
 
     try:
-        author = await use_case.execute(
-            author_id=author_id, author=schema.to_entity()
-        )
-        
+        author = await use_case.execute(author_id=author_id, author=schema.to_entity())
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return ApiResponse(data=OutAuthorSchema.from_entity(author))
-
 
 
 @router.delete(
@@ -165,14 +160,12 @@ async def delete_author_handler(
     use_case: DeleteAuthorUseCase = container.resolve(DeleteAuthorUseCase)
 
     try:
-        await use_case.execute(
-            author_id=author_id
-        )
+        await use_case.execute(author_id=author_id)
 
     except ApplicationException as err:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error": err.message},
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": err.message},
+        )
 
     return status.HTTP_204_NO_CONTENT

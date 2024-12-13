@@ -12,10 +12,8 @@ class AuthorNameTooLongException(LogicException):
         return f"Author's name is too long: {self.name}"
 
 
-
 @dataclass(eq=False)
 class AuthorNotFoundException(LogicException):
-
     @property
     def message(self):
         return "Author not found"

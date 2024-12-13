@@ -12,18 +12,16 @@ class GetBooksUseCase(BaseUseCase):
     book_service: BaseBookService
 
     async def execute(self, pagination: PaginationIn) -> Iterable[Book]:
-
         books = await self.book_service.get_book_list(pagination=pagination)
 
         return books
-    
+
 
 @dataclass
 class GetBookUseCase(BaseUseCase):
     book_service: BaseBookService
 
     async def execute(self, book_id: int) -> Book:
-
         book = await self.book_service.get_book(book_id=book_id)
 
         return book

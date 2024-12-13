@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from domain.entities.library import Book as BookEntity
 
 
-
 class InBookSchema(BaseModel):
     title: str
     description: str
@@ -18,7 +17,6 @@ class InBookSchema(BaseModel):
             author_id=self.author_id,
             available_copies=self.available_copies,
         )
-    
 
 
 class OutBookSchema(BaseModel):
@@ -31,8 +29,7 @@ class OutBookSchema(BaseModel):
     updated_at: datetime
 
     @staticmethod
-    def from_entity(book: BookEntity) -> 'OutBookSchema':
-
+    def from_entity(book: BookEntity) -> "OutBookSchema":
         return OutBookSchema(
             id=book.id,
             title=book.title,
@@ -40,8 +37,8 @@ class OutBookSchema(BaseModel):
             author_id=book.author_id,
             available_copies=book.available_copies,
             created_at=book.created_at,
-            updated_at=book.updated_at
+            updated_at=book.updated_at,
         )
 
-    
+
 BookListSchema = list[OutBookSchema]

@@ -9,7 +9,8 @@ class UpdateAuthorUseCase(BaseUseCase):
     author_service: BaseAuthorService
 
     async def execute(self, author_id: int, author: Author) -> Author:
-
-        author = await self.author_service.update_author(author_id=author_id, author=author)
+        author = await self.author_service.update_author(
+            author_id=author_id, author=author
+        )
 
         return author
