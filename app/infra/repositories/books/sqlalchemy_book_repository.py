@@ -103,3 +103,12 @@ class SQLAlchemyBookRepository(BaseBookRepository):
             await session.flush()
             return True
         return False
+
+    async def increase_by_one(self, session: Session, book_id: int) -> bool:
+        result = await session.execute(select(BookModel).where(BookModel.id == book_id))
+        book_model: BookModel = result.scalars().one_or_none()
+        if book_model:
+            book_model.available_copies += 1
+            await session.flush()
+            return True
+        return False

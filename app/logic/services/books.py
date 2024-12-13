@@ -6,18 +6,14 @@ from contextlib import asynccontextmanager
 from application.api.filters import PaginationIn
 from domain.entities.library import Book as BookEntity
 
-from infra.repositories.authors.base import BaseAuthorRepository
-from infra.repositories.authors.sqlalchemy_author_repository import (
-    SQLAlchemyAuthorRepository,
-)
-from infra.repositories.books.base import BaseBookRepository
-from logic.exceptions.authors import AuthorNameTooLongException, AuthorNotFoundException
 
-from sqlalchemy.orm import sessionmaker, Session
+from infra.repositories.books.base import BaseBookRepository
+
+
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncGenerator
 
-from logic.exceptions.base import LogicException
 from logic.exceptions.books import (
     BookIsNotAvailableException,
     BookNotFoundException,
@@ -44,6 +40,9 @@ class BaseBookService(ABC):
 
     @abstractmethod
     async def reduce_the_quantity_by_one(self, book_id: int): ...
+
+    @abstractmethod
+    async def increase_the_quantity_by_one(self, nook_id: int): ...
 
 
 @dataclass
@@ -141,3 +140,11 @@ class BookService(BaseBookService):
             )
             if not decreased:
                 raise BookIsNotAvailableException()
+
+    async def increase_the_quantity_by_one(self, book_id: int):
+        async with self.get_session() as session:
+            increased = await self.book_repository.increase_by_one(
+                book_id=book_id, session=session
+            )
+            if not increased:
+                raise BookNotFoundException()

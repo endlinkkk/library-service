@@ -23,3 +23,6 @@ class BaseBookRepository(ABC):
 
     @abstractmethod
     async def reduce_by_one(self, book_id: int) -> bool: ...
+
+    @abstractmethod
+    async def increase_by_one(self, book_id: int) -> bool: ...

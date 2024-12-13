@@ -44,6 +44,8 @@ from logic.use_cases.books.delete import DeleteBookUseCase
 from logic.use_cases.books.get import GetBookUseCase, GetBooksUseCase
 from logic.use_cases.books.update import UpdateBookUseCase
 from logic.use_cases.borrows.create import CreateBorrowUseCase
+from logic.use_cases.borrows.get import GetBorrowUseCase, GetBorrowsUseCase
+from logic.use_cases.borrows.update import UpdateBorrowUseCase
 from settings.config import Settings
 
 
@@ -164,5 +166,8 @@ def _init_container() -> Container:
 
     # register use cases
     container.register(CreateBorrowUseCase)
+    container.register(GetBorrowsUseCase)
+    container.register(GetBorrowUseCase)
+    container.register(UpdateBorrowUseCase)
 
     return container

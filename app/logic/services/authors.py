@@ -7,16 +7,11 @@ from application.api.filters import PaginationIn
 from domain.entities.library import Author as AuthorEntity
 
 from infra.repositories.authors.base import BaseAuthorRepository
-from infra.repositories.authors.sqlalchemy_author_repository import (
-    SQLAlchemyAuthorRepository,
-)
 from logic.exceptions.authors import AuthorNameTooLongException, AuthorNotFoundException
 
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncGenerator
-
-from logic.exceptions.base import LogicException
 
 
 @dataclass

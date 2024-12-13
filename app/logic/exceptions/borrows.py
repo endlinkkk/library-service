@@ -10,3 +10,10 @@ class BorrowReaderNameTooLongException(LogicException):
     @property
     def message(self):
         return f"Borrow reader name is too long: {self.reader_name}"
+
+
+@dataclass
+class BorrowNotFoundException(LogicException):
+    @property
+    def message(self):
+        return "Borrow not found"

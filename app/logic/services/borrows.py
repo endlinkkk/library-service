@@ -6,21 +6,19 @@ from contextlib import asynccontextmanager
 from application.api.filters import PaginationIn
 from domain.entities.library import Borrow as BorrowEntity
 
-from infra.repositories.authors.base import BaseAuthorRepository
-from infra.repositories.authors.sqlalchemy_author_repository import (
-    SQLAlchemyAuthorRepository,
-)
-from infra.repositories.books.base import BaseBookRepository
-from infra.repositories.borrows.base import BaseBorrowRepository
-from logic.exceptions.authors import AuthorNameTooLongException, AuthorNotFoundException
 
-from sqlalchemy.orm import sessionmaker, Session
+from infra.repositories.borrows.base import BaseBorrowRepository
+
+
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncGenerator
 
-from logic.exceptions.base import LogicException
-from logic.exceptions.books import BookNotFoundException, BookTitleTooLongException
-from logic.exceptions.borrows import BorrowReaderNameTooLongException
+
+from logic.exceptions.borrows import (
+    BorrowNotFoundException,
+    BorrowReaderNameTooLongException,
+)
 
 
 @dataclass
@@ -28,17 +26,16 @@ class BaseBorrowService(ABC):
     @abstractmethod
     async def create_borrow(self, borrow: BorrowEntity) -> BorrowEntity: ...
 
-    # @abstractmethod
-    # async def get_borrow_list(self, pagination: PaginationIn) -> Iterable[BorrowEntity]: ...
+    @abstractmethod
+    async def get_borrow_list(
+        self, pagination: PaginationIn
+    ) -> Iterable[BorrowEntity]: ...
 
-    # @abstractmethod
-    # async def get_borrow(self, borrow_id: int) -> BorrowEntity: ...
+    @abstractmethod
+    async def get_borrow(self, borrow_id: int) -> BorrowEntity: ...
 
-    # @abstractmethod
-    # async def update_borrow(self, borrow_id: int, borrow: BorrowEntity) -> BorrowEntity: ...
-
-    # @abstractmethod
-    # async def delete_borrow(self, borrow_id: int): ...
+    @abstractmethod
+    async def completion_of_the_issue(self, borrow_id: int) -> BorrowEntity: ...
 
 
 @dataclass
@@ -93,43 +90,31 @@ class BorrowService(BaseBorrowService):
 
         return saved_borrow
 
-    # async def get_book_list(self, pagination: PaginationIn) -> Iterable[BookEntity]:
-    #     async with self.get_session() as session:
-    #         authors = await self.book_repository.get_all(
-    #             session=session, limit=pagination.limit, offset=pagination.offset
-    #         )
-    #     return authors
+    async def get_borrow_list(self, pagination: PaginationIn) -> Iterable[BorrowEntity]:
+        async with self.get_session() as session:
+            authors = await self.borrow_repository.get_all(
+                session=session, limit=pagination.limit, offset=pagination.offset
+            )
+        return authors
 
-    # async def get_book(self, book_id: int) -> BookEntity | None:
-    #     async with self.get_session() as session:
-    #         book = await self.book_repository.get_by_id(
-    #             book_id=book_id, session=session
-    #         )
+    async def get_borrow(self, borrow_id: int) -> BorrowEntity | None:
+        async with self.get_session() as session:
+            borrow = await self.borrow_repository.get_by_id(
+                borrow_id=borrow_id, session=session
+            )
 
-    #     if book is None:
-    #         raise BookNotFoundException()
+            if borrow is None:
+                raise BorrowNotFoundException()
 
-    #     return book
+        return borrow
 
-    # async def update_book(self, book_id: int, book: BookEntity) -> BookEntity:
-    #     async with self.get_session() as session:
-    #         book = await self.book_repository.update(
-    #             book_id=book_id, session=session, book=book
-    #         )
+    async def completion_of_the_issue(self, borrow_id: int) -> BorrowEntity:
+        async with self.get_session() as session:
+            borrow = await self.borrow_repository.completion_issue(
+                session=session, borrow_id=borrow_id
+            )
 
-    #         await session.commit()
+            if borrow is None:
+                raise BorrowNotFoundException()
 
-    #     if book is None:
-    #         raise BookNotFoundException()
-
-    #     return book
-
-    # async def delete_book(self, book_id: int):
-    #     async with self.get_session() as session:
-    #         deleted = await self.book_repository.delete(
-    #             book_id=book_id, session=session
-    #         )
-    #         await session.commit()
-
-    #     if not deleted:
-    #         raise BookNotFoundException()
+        return borrow

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from domain.entities.library import Book
 from logic.services.books import BaseBookService
 from logic.use_cases.base import BaseUseCase
 
